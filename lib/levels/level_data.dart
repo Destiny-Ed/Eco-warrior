@@ -1,10 +1,14 @@
-import 'package:flutter/material.dart';
-
 /// Dynamic Level System
 /// To add a new level simply append a new LevelConfig to [allLevels].
-/// It will automatically appear in Level Select.
 
 enum HazardType { smog, oil, toxic }
+
+enum TrashType {
+  plastic, // Blue
+  metal,   // Silver/Grey
+  paper,   // Yellow/Brown
+  organic, // Green
+}
 
 class LevelConfig {
   final int id;
@@ -21,7 +25,7 @@ class LevelConfig {
   final double hazardSpeed;
   final int initialTrash;
   final Duration spawnInterval;
-  final String tip; // Educational tip for kids
+  final String tip;
 
   const LevelConfig({
     required this.id,
@@ -48,8 +52,8 @@ final List<LevelConfig> allLevels = [
     name: 'The Polluted Park',
     emoji: '🌳⚠️',
     story:
-        'Your neighborhood park was once full of laughter and green grass. Now plastic bottles and cans cover the ground. As a new Eco-Warrior, your first mission is simple but important: clean it up and recycle properly!',
-    goalDescription: 'Collect 20 pieces of trash and recycle them.',
+        'Your neighborhood park was once full of laughter and green grass. Now plastic bottles and cans cover the ground. As a new Eco-Warrior, your first mission is simple but important: pick up trash and take it to the matching recycling bin!',
+    goalDescription: 'Collect & recycle 20 pieces of trash. Plant 3 trees.',
     trashTarget: 20,
     treesToPlant: 3,
     backgroundColor: const Color(0xFF81C784),
@@ -63,8 +67,8 @@ final List<LevelConfig> allLevels = [
     name: 'Smoggy City Streets',
     emoji: '🏙️🌫️',
     story:
-        'The city air is thick with smog. Cars and factories have made it hard to breathe. Move carefully, avoid the smog clouds, and clean the streets so kids can play outside again!',
-    goalDescription: 'Collect 30 trash items while avoiding smog clouds.',
+        'The city air is thick with smog. Cars and factories have made it hard to breathe. Move carefully, avoid the smog clouds, pick up trash and deliver it to the correct bins!',
+    goalDescription: 'Recycle 30 trash items while avoiding smog. Plant 5 trees.',
     trashTarget: 30,
     treesToPlant: 5,
     backgroundColor: const Color(0xFF90A4AE),
@@ -81,8 +85,8 @@ final List<LevelConfig> allLevels = [
     name: 'Oily Beach Rescue',
     emoji: '🏖️🛢️',
     story:
-        'An oil spill has reached the beautiful beach. Sea turtles and fish are in danger. Collect the plastic and oil blobs before the tide brings more pollution!',
-    goalDescription: 'Collect 35 trash items and clean 5 oil spills.',
+        'An oil spill has reached the beautiful beach. Sea turtles and fish are in danger. Collect the plastic and take it to the right bins before the tide brings more pollution!',
+    goalDescription: 'Recycle 35 trash items. Avoid oil hazards. Plant 4 trees.',
     trashTarget: 35,
     treesToPlant: 4,
     backgroundColor: const Color(0xFF4FC3F7),
@@ -99,8 +103,8 @@ final List<LevelConfig> allLevels = [
     name: 'Toxic Forest',
     emoji: '🌲💣',
     story:
-        'Illegal dumping has poisoned the forest. Toxic barrels are leaking and the animals are fleeing. Plant trees and carefully remove the toxic waste to bring life back!',
-    goalDescription: 'Collect 40 trash and plant 8 trees while avoiding toxic waste.',
+        'Illegal dumping has poisoned the forest. Toxic barrels are leaking. Carefully remove the toxic waste by recycling correctly and plant trees to bring life back!',
+    goalDescription: 'Recycle 40 trash and plant 8 trees while avoiding toxic waste.',
     trashTarget: 40,
     treesToPlant: 8,
     backgroundColor: const Color(0xFF66BB6A),
@@ -117,8 +121,8 @@ final List<LevelConfig> allLevels = [
     name: "Earth's Final Call",
     emoji: '🌍🚀',
     story:
-        'This is it! Pollution has reached a critical point. Only the bravest Eco-Warrior can clean the mega-mess, plant forests of hope, and inspire the world. Are you ready?',
-    goalDescription: 'Collect 50 trash, plant 12 trees, and survive the pollution waves!',
+        'This is it! Pollution has reached a critical point. Only the bravest Eco-Warrior can clean the mega-mess, recycle everything correctly, plant forests of hope, and inspire the world.',
+    goalDescription: 'Recycle 50 trash, plant 12 trees, and survive the pollution waves!',
     trashTarget: 50,
     treesToPlant: 12,
     backgroundColor: const Color(0xFF26A69A),

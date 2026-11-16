@@ -2,66 +2,107 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+import '../levels/level_data.dart';
 
 class Trash extends PositionComponent with CollisionCallbacks {
+  final TrashType type;
   final Random _random = Random();
-  late final Color color;
 
-  Trash({required Vector2 position})
-      : super(
+  Trash({required Vector2 position, TrashType? type})
+      : type = type ?? TrashType.values[Random().nextInt(TrashType.values.length)],
+        super(
           position: position,
-          size: Vector2(28, 28),
+          size: Vector2(36, 36),
           anchor: Anchor.center,
-        ) {
-    // Random fun colors for bottles/cans
-    final colors = [
-      const Color(0xFF42A5F5), // blue bottle
-      const Color(0xFFEF5350), // red can
-      const Color(0xFFFFCA28), // yellow
-      const Color(0xFFAB47BC), // purple
-      const Color(0xFF26C6DA), // cyan
-    ];
-    color = colors[_random.nextInt(colors.length)];
+        );
+
+  Color get color {
+    switch (type) {
+      case TrashType.plastic:
+        return const Color(0xFF42A5F5); // Bright blue
+      case TrashType.metal:
+        return const Color(0xFF78909C); // Silver grey
+      case TrashType.paper:
+        return const Color(0xFFFFB74D); // Warm orange/yellow
+      case TrashType.organic:
+        return const Color(0xFF66BB6A); // Green
+    }
+  }
+
+  String get emoji {
+    switch (type) {
+      case TrashType.plastic:
+        return '🧻'; // bottle
+      case TrashType.metal:
+        return '🥤'; // can
+      case TrashType.paper:
+        return '📄'; // page
+      case TrashType.organic:
+        return '🍎'; // apple
+    }
+  }
+
+  String get label {
+    switch (type) {
+      case TrashType.plastic:
+        return 'PLASTIC';
+      case TrashType.metal:
+        return 'METAL';
+      case TrashType.paper:
+        return 'PAPER';
+      case TrashType.organic:
+        return 'ORGANIC';
+    }
   }
 
   @override
   Future<void> onLoad() async {
-    // Body
-    add(RoundedRectangleComponent(
-      size: size * 0.85,
-      cornerRadius: const Radius.circular(6),
+    // Main body - clearly colored
+    add(CircleComponent(
+      radius: 16,
       paint: Paint()..color = color,
       anchor: Anchor.center,
       position: size / 2,
     ));
-    // Shine
+
+    // White border for visibility
     add(CircleComponent(
-      radius: 4,
-      paint: Paint()..color = Colors.white.withOpacity(0.6),
-      position: Vector2(8, 6),
+      radius: 17,
+      paint: Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5,
+      anchor: Anchor.center,
+      position: size / 2,
     ));
-    add(RectangleHitbox());
-  }
-}
 
-class RoundedRectangleComponent extends PositionComponent {
-  final Radius cornerRadius;
-  final Paint paint;
+    // Emoji on top for instant recognition
+    add(TextComponent(
+      text: emoji,
+      anchor: Anchor.center,
+      position: size / 2,
+      textRenderer: TextPaint(
+        style: const TextStyle(fontSize: 18),
+      ),
+    ));
 
-  RoundedRectangleComponent({
-    required Vector2 size,
-    required this.cornerRadius,
-    required this.paint,
-    super.position,
-    super.anchor,
-  }) : super(size: size);
+    // Small label underneath for clarity
+    add(TextComponent(
+      text: label,
+      anchor: Anchor.topCenter,
+      position: Vector2(size.x / 2, size.y + 2),
+      textRenderer: TextPaint(
+        style: TextStyle(
+          color: color,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(color: Colors.black.withOpacity(0.6), blurRadius: 2),
+          ],
+        ),
+      ),
+    ));
 
-  @override
-  void render(Canvas canvas) {
-    final rrect = RRect.fromRectAndRadius(
-      size.toRect(),
-      cornerRadius,
-    );
-    canvas.drawRRect(rrect, paint);
+    add(CircleHitbox());
   }
 }
