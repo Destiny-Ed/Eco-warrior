@@ -1,7 +1,7 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flame/components.dart'; // for Vector2
+import 'package:flame/components.dart';
 import '../game/eco_warrior_game.dart';
 import '../levels/level_data.dart';
 import 'pause_menu_screen.dart';
@@ -19,7 +19,7 @@ class _GameScreenState extends State<GameScreen> {
   late EcoWarriorGame game;
   Offset? _joystickOrigin;
   Offset? _knobPosition;
-  static const double joystickRadius = 55;
+  static const double joystickRadius = 58;
 
   @override
   void initState() {
@@ -63,8 +63,8 @@ class _GameScreenState extends State<GameScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // dialog
-              Navigator.pop(context); // game
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: const Text('Back to Levels'),
           ),
@@ -132,11 +132,11 @@ class _GameScreenState extends State<GameScreen> {
         children: [
           GameWidget(game: game),
 
-          // Pause button
+          // Pause
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             right: 12,
-            child: _ActionButton(
+            child: _RoundButton(
               icon: Icons.pause_rounded,
               color: Colors.orangeAccent,
               onTap: () {
@@ -154,10 +154,10 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
 
-          // Joystick (bottom left)
+          // Joystick
           Positioned(
-            left: 24,
-            bottom: 32,
+            left: 20,
+            bottom: 28,
             child: GestureDetector(
               onPanStart: (d) {
                 setState(() {
@@ -178,31 +178,31 @@ class _GameScreenState extends State<GameScreen> {
                       height: joystickRadius * 2,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.25),
-                        border: Border.all(color: Colors.white54, width: 2),
+                        color: Colors.white.withOpacity(0.22),
+                        border: Border.all(color: Colors.white60, width: 2.5),
                       ),
                     ),
                     if (_knobPosition != null && _joystickOrigin != null)
                       Positioned(
-                        left: (_knobPosition!.dx - 22).clamp(0, joystickRadius * 2 - 44),
-                        top: (_knobPosition!.dy - 22).clamp(0, joystickRadius * 2 - 44),
+                        left: (_knobPosition!.dx - 24).clamp(0, joystickRadius * 2 - 48),
+                        top: (_knobPosition!.dy - 24).clamp(0, joystickRadius * 2 - 48),
                         child: Container(
-                          width: 44,
-                          height: 44,
+                          width: 48,
+                          height: 48,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
-                            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
+                            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8)],
                           ),
                         ),
                       )
                     else
                       Container(
-                        width: 44,
-                        height: 44,
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withOpacity(0.75),
                         ),
                       ),
                   ],
@@ -211,35 +211,55 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
 
-          // Hand pick button (right side)
+          // HAND button - primary action (pick / deliver)
           Positioned(
-            right: 20,
+            right: 18,
             bottom: 140,
-            child: _ActionButton(
-              icon: Icons.back_hand_rounded,
-              color: const Color(0xFFFFA726),
-              size: 64,
-              onTap: () => game.pickNearbyTrash(),
+            child: Column(
+              children: [
+                _RoundButton(
+                  icon: Icons.back_hand_rounded,
+                  color: const Color(0xFFFFA726),
+                  size: 68,
+                  onTap: () => game.tryPickTrash(),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'PICK / DROP',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    shadows: [Shadow(color: Colors.black54, blurRadius: 3)],
+                  ),
+                ),
+              ],
             ),
           ),
 
-          // Plant tree / power-up button
+          // Plant tree button
           Positioned(
-            right: 20,
-            bottom: 60,
-            child: _ActionButton(
-              icon: Icons.park_rounded,
-              color: const Color(0xFF66BB6A),
-              size: 64,
-              onTap: () {
-                if (widget.level.treesToPlant > 0) {
-                  game.plantTree();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('No trees needed in this level!')),
-                  );
-                }
-              },
+            right: 18,
+            bottom: 55,
+            child: Column(
+              children: [
+                _RoundButton(
+                  icon: Icons.park_rounded,
+                  color: const Color(0xFF66BB6A),
+                  size: 60,
+                  onTap: () => game.plantTree(),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'PLANT',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    shadows: [Shadow(color: Colors.black54, blurRadius: 3)],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -248,17 +268,17 @@ class _GameScreenState extends State<GameScreen> {
   }
 }
 
-class _ActionButton extends StatelessWidget {
+class _RoundButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
   final double size;
 
-  const _ActionButton({
+  const _RoundButton({
     required this.icon,
     required this.color,
     required this.onTap,
-    this.size = 52,
+    this.size = 54,
   });
 
   @override
@@ -272,10 +292,11 @@ class _ActionButton extends StatelessWidget {
           shape: BoxShape.circle,
           color: color,
           boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3)),
+            BoxShadow(color: Colors.black35, blurRadius: 10, offset: Offset(0, 4)),
           ],
+          border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
         ),
-        child: Icon(icon, color: Colors.white, size: size * 0.5),
+        child: Icon(icon, color: Colors.white, size: size * 0.48),
       ),
     );
   }

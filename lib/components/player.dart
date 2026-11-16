@@ -2,55 +2,63 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../game/eco_warrior_game.dart';
+import '../levels/level_data.dart';
+import 'trash.dart';
 
 class Player extends PositionComponent with HasGameRef<EcoWarriorGame>, CollisionCallbacks {
-  static const double speed = 180;
+  static const double speed = 190;
+
+  Trash? carriedTrash; // Currently held item
 
   Player({required Vector2 position})
       : super(
           position: position,
-          size: Vector2(48, 48),
+          size: Vector2(52, 52),
           anchor: Anchor.center,
         );
 
   @override
   Future<void> onLoad() async {
-    // Cute eco-hero body (green circle + cape feel)
+    // Body
     add(CircleComponent(
-      radius: 22,
+      radius: 24,
       paint: Paint()..color = const Color(0xFF66BB6A),
       anchor: Anchor.center,
       position: size / 2,
     ));
-    // Head / face
+
+    // Face
     add(CircleComponent(
-      radius: 12,
+      radius: 13,
       paint: Paint()..color = const Color(0xFFFFCC80),
       anchor: Anchor.center,
-      position: Vector2(size.x / 2, size.y / 2 - 10),
+      position: Vector2(size.x / 2, size.y / 2 - 8),
     ));
+
     // Eyes
     add(CircleComponent(
-      radius: 3,
-      paint: Paint()..color = Colors.black,
-      position: Vector2(size.x / 2 - 5, size.y / 2 - 12),
+      radius: 3.5,
+      paint: Paint()..color = Colors.black87,
+      position: Vector2(size.x / 2 - 6, size.y / 2 - 11),
     ));
     add(CircleComponent(
-      radius: 3,
-      paint: Paint()..color = Colors.black,
-      position: Vector2(size.x / 2 + 5, size.y / 2 - 12),
+      radius: 3.5,
+      paint: Paint()..color = Colors.black87,
+      position: Vector2(size.x / 2 + 6, size.y / 2 - 11),
     ));
+
     // Smile
     add(RectangleComponent(
-      size: Vector2(10, 3),
+      size: Vector2(12, 3),
       paint: Paint()..color = Colors.black87,
-      position: Vector2(size.x / 2 - 5, size.y / 2 - 4),
+      position: Vector2(size.x / 2 - 6, size.y / 2 - 2),
     ));
-    // Eco cape / leaf
+
+    // Eco leaf / cape
     add(CircleComponent(
-      radius: 8,
+      radius: 9,
       paint: Paint()..color = const Color(0xFF43A047),
-      position: Vector2(size.x / 2 + 14, size.y / 2 + 4),
+      position: Vector2(size.x / 2 + 16, size.y / 2 + 6),
     ));
 
     add(CircleHitbox());
@@ -64,5 +72,38 @@ class Player extends PositionComponent with HasGameRef<EcoWarriorGame>, Collisio
       Vector2(size.x / 2, size.y / 2),
       gameRef.size - Vector2(size.x / 2, size.y / 2),
     );
+  }
+
+  bool get isCarrying => carriedTrash != null;
+
+  void pickUp(Trash trash) {
+    if (isCarrying) return;
+    carriedTrash = trash;
+    trash.removeFromParent();
+  }
+
+  void dropTrash() {
+    carriedTrash = null;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+
+    // Show carried trash above the player so it's obvious
+    if (carriedTrash != null) {
+      final paint = Paint()..color = carriedTrash!.color;
+      canvas.drawCircle(Offset(size.x / 2, -12), 14, paint);
+      // Emoji
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: carriedTrash!.emoji,
+          style: const TextStyle(fontSize: 16),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(size.x / 2 - 8, -20));
+    }
   }
 }
