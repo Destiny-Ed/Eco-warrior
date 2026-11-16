@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import '../game/eco_warrior_game.dart';
 import '../levels/level_data.dart';
 import 'pause_menu_screen.dart';
+import 'tutorial_overlay.dart';
 
 class GameScreen extends StatefulWidget {
   final LevelConfig level;
@@ -20,16 +21,48 @@ class _GameScreenState extends State<GameScreen> {
   Offset? _joystickOrigin;
   Offset? _knobPosition;
   static const double joystickRadius = 58;
+  bool _showTutorial = false;
+  bool _tutorialChecked = false;
 
   @override
   void initState() {
     super.initState();
+    _checkTutorial();
+  }
+
+  Future<void> _checkTutorial() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool('tutorial_seen') ?? false;
+    if (!seen && widget.level.id == 1) {
+      setState(() {
+        _showTutorial = true;
+        _tutorialChecked = true;
+      });
+    } else {
+      setState(() => _tutorialChecked = true);
+      _initGame();
+    }
+  }
+
+  void _initGame() {
+    final topPadding = MediaQuery.of(context).padding.top;
     game = EcoWarriorGame(
       level: widget.level,
+      topSafePadding: topPadding,
       onPause: () {},
       onLevelComplete: _onLevelComplete,
       onGameOver: _onGameOver,
+      onTimeUp: _onTimeUp,
     );
+  }
+
+  Future<void> _finishTutorial() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('tutorial_seen', true);
+    setState(() {
+      _showTutorial = false;
+    });
+    _initGame();
   }
 
   Future<void> _onLevelComplete() async {
@@ -51,6 +84,8 @@ class _GameScreenState extends State<GameScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('You restored ${widget.level.name}!'),
+            const SizedBox(height: 8),
+            Text('Score: ${game.score}', style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Text(
               widget.level.tip,
@@ -74,13 +109,21 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onGameOver() {
+    _showFailDialog('You took too much damage. Try again, Eco-Warrior!');
+  }
+
+  void _onTimeUp() {
+    _showFailDialog('Time\'s up! The pollution won this round. Try again!');
+  }
+
+  void _showFailDialog(String message) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('😢 Oh no!', textAlign: TextAlign.center),
-        content: const Text('You took too much damage. Try again, Eco-Warrior!'),
+        title: const Text('😢 Mission Failed', textAlign: TextAlign.center),
+        content: Text(message, textAlign: TextAlign.center),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
           TextButton(
@@ -127,6 +170,16 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_tutorialChecked) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_showTutorial) {
+      return TutorialOverlay(onFinished: _finishTutorial);
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -211,7 +264,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
 
-          // HAND button - primary action (pick / deliver)
+          // HAND button
           Positioned(
             right: 18,
             bottom: 140,
@@ -237,7 +290,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
 
-          // Plant tree button
+          // Plant button
           Positioned(
             right: 18,
             bottom: 55,
@@ -291,8 +344,8 @@ class _RoundButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color,
-          boxShadow:   [
-            BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4)),
+          boxShadow: const [
+            BoxShadow(color: Colors.black35, blurRadius: 10, offset: Offset(0, 4)),
           ],
           border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
         ),
