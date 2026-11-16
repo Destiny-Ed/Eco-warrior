@@ -9,88 +9,73 @@ class MainMenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF81C784),
-              Color(0xFF4FC3F7),
-              Color(0xFFBA68C8),
+              Color(0xFF66BB6A),
+              Color(0xFF26A69A),
             ],
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    '🌍',
-                    style: TextStyle(fontSize: 72),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              children: [
+                const Spacer(flex: 2),
+                const Text('🌍', style: TextStyle(fontSize: 64)),
+                const SizedBox(height: 12),
+                const Text(
+                  'Eco-Warrior',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Eco-Warrior',
-                    style: TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(color: Colors.black26, blurRadius: 8, offset: Offset(2, 2)),
-                      ],
-                    ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Restore the Earth',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white.withOpacity(0.9),
+                    fontWeight: FontWeight.w500,
                   ),
-                  const Text(
-                    'Restore the Earth',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
+                ),
+                const Spacer(flex: 2),
+                _PrimaryButton(
+                  label: 'Play',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LevelSelectScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 14),
+                _SecondaryButton(
+                  label: 'Settings',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    );
+                  },
+                ),
+                const Spacer(),
+                Text(
+                  'Clean • Recycle • Protect',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 13,
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Clean • Recycle • Plant • Protect',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-                  _MenuButton(
-                    label: 'Play Game',
-                    icon: Icons.play_arrow_rounded,
-                    color: const Color(0xFFFFCA28),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LevelSelectScreen()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _MenuButton(
-                    label: 'Settings',
-                    icon: Icons.settings_rounded,
-                    color: const Color(0xFF42A5F5),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 40),
-                  const Text(
-                    'Made for young eco-heroes ✨',
-                    style: TextStyle(color: Colors.white60, fontSize: 13),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
           ),
         ),
@@ -99,34 +84,52 @@ class MainMenuScreen extends StatelessWidget {
   }
 }
 
-class _MenuButton extends StatelessWidget {
+class _PrimaryButton extends StatelessWidget {
   final String label;
-  final IconData icon;
-  final Color color;
   final VoidCallback onTap;
 
-  const _MenuButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
+  const _PrimaryButton({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 260,
-      child: ElevatedButton.icon(
+      width: double.infinity,
+      height: 54,
+      child: ElevatedButton(
         onPressed: onTap,
-        icon: Icon(icon, size: 28),
-        label: Text(label),
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.black87,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          elevation: 8,
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF2E7D32),
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
+        child: Text(label),
+      ),
+    );
+  }
+}
+
+class _SecondaryButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _SecondaryButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: Colors.white70, width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        child: Text(label),
       ),
     );
   }

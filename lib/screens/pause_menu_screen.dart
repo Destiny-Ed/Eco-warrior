@@ -17,57 +17,49 @@ class PauseMenuScreen extends StatelessWidget {
       backgroundColor: Colors.black54,
       body: Center(
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 32),
-          padding: const EdgeInsets.all(28),
+          margin: const EdgeInsets.symmetric(horizontal: 40),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF66BB6A), Color(0xFF42A5F5)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: const [
-              BoxShadow(color: Colors.black38, blurRadius: 20, offset: Offset(0, 8)),
-            ],
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                '⏸ Paused',
+                'Paused',
                 style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1B5E20),
                 ),
               ),
-              const SizedBox(height: 28),
-              _PauseButton(
+              const SizedBox(height: 24),
+              _MenuButton(
                 label: 'Resume',
-                color: const Color(0xFFFFCA28),
+                color: const Color(0xFF43A047),
                 onTap: () {
                   onResume();
                   Navigator.pop(context);
                 },
               ),
-              const SizedBox(height: 12),
-              _PauseButton(
+              const SizedBox(height: 10),
+              _MenuButton(
                 label: 'Restart',
-                color: const Color(0xFFEF5350),
+                color: const Color(0xFFEF6C00),
                 onTap: () {
                   game.reset();
                   onResume();
                   Navigator.pop(context);
                 },
               ),
-              const SizedBox(height: 12),
-              _PauseButton(
+              const SizedBox(height: 10),
+              _MenuButton(
                 label: 'Main Menu',
-                color: Colors.white,
-                textColor: Colors.black87,
+                color: const Color(0xFF546E7A),
                 onTap: () {
-                  Navigator.pop(context); // pause
-                  Navigator.pop(context); // game
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                 },
               ),
             ],
@@ -78,16 +70,14 @@ class PauseMenuScreen extends StatelessWidget {
   }
 }
 
-class _PauseButton extends StatelessWidget {
+class _MenuButton extends StatelessWidget {
   final String label;
   final Color color;
-  final Color textColor;
   final VoidCallback onTap;
 
-  const _PauseButton({
+  const _MenuButton({
     required this.label,
     required this.color,
-    this.textColor = Colors.black87,
     required this.onTap,
   });
 
@@ -95,15 +85,17 @@ class _PauseButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
+      height: 48,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: textColor,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
-        child: Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        child: Text(label),
       ),
     );
   }

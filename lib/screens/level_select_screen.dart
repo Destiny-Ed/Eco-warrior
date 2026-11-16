@@ -22,145 +22,97 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   Future<void> _loadProgress() async {
     final prefs = await SharedPreferences.getInstance();
     final list = prefs.getStringList('completed_levels') ?? [];
-    setState(() {
-      completed = list.map(int.parse).toSet();
-    });
+    setState(() => completed = list.map(int.parse).toSet());
   }
 
-  bool _isUnlocked(int id) {
-    if (id == 1) return true;
-    return completed.contains(id - 1);
-  }
+  bool _isUnlocked(int id) => id == 1 || completed.contains(id - 1);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFE8F5E9), Color(0xFFB3E5FC)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text('Select Mission'),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1B5E20),
+        elevation: 0,
+      ),
+      body: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        itemCount: allLevels.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final level = allLevels[index];
+          final unlocked = _isUnlocked(level.id);
+          final done = completed.contains(level.id);
+
+          return Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            elevation: unlocked ? 1 : 0,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: unlocked
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => StoryScreen(level: level)),
+                      ).then((_) => _loadProgress());
+                    }
+                  : null,
+              child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, size: 28),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Choose Your Mission',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E7D32),
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: unlocked
+                            ? level.accentColor.withOpacity(0.15)
+                            : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text(
+                          unlocked ? level.emoji : '🔒',
+                          style: const TextStyle(fontSize: 24),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 48),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Level ${level.id}  •  ${level.name}',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: unlocked ? Colors.black87 : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            level.goalDescription,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: unlocked ? Colors.black54 : Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (done)
+                      const Icon(Icons.check_circle_rounded, color: Color(0xFF43A047), size: 24),
                   ],
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  itemCount: allLevels.length,
-                  itemBuilder: (context, index) {
-                    final level = allLevels[index];
-                    final unlocked = _isUnlocked(level.id);
-                    final done = completed.contains(level.id);
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: Material(
-                        elevation: unlocked ? 4 : 1,
-                        borderRadius: BorderRadius.circular(20),
-                        color: unlocked ? Colors.white : Colors.grey.shade200,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: unlocked
-                              ? () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => StoryScreen(level: level),
-                                    ),
-                                  ).then((_) => _loadProgress());
-                                }
-                              : null,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: unlocked
-                                        ? level.accentColor.withOpacity(0.2)
-                                        : Colors.grey.shade300,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      unlocked ? level.emoji : '🔒',
-                                      style: const TextStyle(fontSize: 28),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Level ${level.id}: ${level.name}',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: unlocked ? Colors.black87 : Colors.grey,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        level.goalDescription,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: unlocked ? Colors.black54 : Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (done)
-                                  const Icon(Icons.check_circle, color: Colors.green, size: 28),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  'Tip: Complete a level to unlock the next one!',
-                  style: TextStyle(color: Colors.black45, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
