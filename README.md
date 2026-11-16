@@ -1,43 +1,42 @@
 # Eco-Warrior: Restore the Earth 🌍
 
-A fun, educational 2D game built with **Flutter + Flame** designed for children and teens.
+A fun, educational 2D game built with **Flutter + Flame** for children and teens.
 
-Help the Eco-Warrior clean pollution, **recycle correctly**, plant trees, and restore nature across multiple colorful levels.
+Help the Eco-Warrior clean pollution, recycle correctly, plant trees, and restore nature across themed levels.
 
-## How to Play (Clear Instructions)
+## How to Play
 
-1. **Move** using the virtual joystick (bottom-left).
-2. **Pick up trash** by getting close and tapping the big orange **HAND** button.
-3. The trash you are carrying appears above your head with its color + emoji.
-4. **Deliver** it to the matching colored bin at the bottom of the screen:
-   - 🧻 **Blue** = Plastic
-   - 🥤 **Grey** = Metal
-   - 📄 **Orange** = Paper
-   - 🍎 **Green** = Organic
-5. Tap the green **PLANT** button to plant trees when the level requires it.
-6. Avoid moving hazards (smog, oil, toxic waste).
+1. **Move** with the joystick (bottom-left).
+2. **Pick up trash** by getting close and tapping the orange **HAND** button.
+3. The trash you carry appears above your head.
+4. **Deliver** it to the matching colored bin at the bottom:
+   - 🧻 Blue = Plastic
+   - 🥤 Grey = Metal
+   - 📄 Orange = Paper
+   - 🍎 Green = Organic
+5. Tap **PLANT** to grow trees when required.
+6. Finish the goals **before the timer runs out**.
+7. Avoid hazards and orange construction obstacles (they cost points/hearts).
 
-The top instruction bar always tells you what to do next.
+A first-time tutorial walks new players through everything.
 
-## Features
+## What's New
 
-- 🎮 Bright, kid-friendly visuals with strong color coding + emojis for instant recognition
-- 🕹️ Virtual joystick + clear action buttons with labels
-- 🔄 Improved recycling mechanic (pick → carry → deliver to matching bin)
-- 💡 Dynamic on-screen instructions that change based on what you're holding
-- 📳 Haptic feedback (vibration) on pick, correct delivery, planting, and damage
-- 🏆 5 levels with unique stories, goals, and increasing challenge
-- 📋 Dynamic level system — easily add new levels in one file
-- ⏸️ Pause, Restart, Settings, Level Select with unlock progression
-- 🌱 Educational tips on every level
+- First-time interactive tutorial overlay
+- HUD safely positioned below the status bar
+- Countdown timer per level (fail if time runs out)
+- Smarter trash spawning (only when there are few items left on screen)
+- Themed environments: neighborhood houses & people, city streets & cars, beach, forest animals, etc.
+- Obstacles that reduce score when hit
+- Score system + time bonus on success
 
 ## Levels
 
-1. **The Polluted Park** – Learn the basics of recycling
-2. **Smoggy City Streets** – Avoid air pollution
-3. **Oily Beach Rescue** – Protect the coastline
-4. **Toxic Forest** – Restore the woods
-5. **Earth's Final Call** – The ultimate challenge
+1. **The Polluted Park** (Neighborhood) – 90s
+2. **Smoggy City Streets** – 110s
+3. **Oily Beach Rescue** – 120s
+4. **Toxic Forest** – 130s
+5. **Earth's Final Call** – 150s
 
 ## Getting Started
 
@@ -50,12 +49,6 @@ flutter run
 
 ## Adding New Levels
 
-Edit `lib/levels/level_data.dart` and append a new `LevelConfig`.  
-It will automatically appear in the Level Select screen.
-
-## Notes on Assets
-
-The game currently uses highly readable procedural graphics + emojis so everything is obvious without external image files.  
-You can later replace the shapes with real sprites by loading them in the component `onLoad` methods.
+Edit `lib/levels/level_data.dart` and add a new `LevelConfig`. It appears automatically in Level Select.
 
 Made with ❤️ for young eco-heroes.
