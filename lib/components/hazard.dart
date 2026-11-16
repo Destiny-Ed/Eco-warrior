@@ -17,43 +17,54 @@ class Hazard extends PositionComponent with HasGameRef<EcoWarriorGame>, Collisio
     required this.direction,
   }) : super(
           position: position,
-          size: Vector2(40, 40),
+          size: Vector2(44, 44),
           anchor: Anchor.center,
         );
 
   @override
   Future<void> onLoad() async {
     Color color;
+    String emoji;
+
     switch (type) {
       case HazardType.smog:
-        color = const Color(0xFF78909C).withOpacity(0.75);
+        color = const Color(0xFF78909C).withOpacity(0.8);
+        emoji = '🌫️';
         break;
       case HazardType.oil:
-        color = const Color(0xFF212121).withOpacity(0.85);
+        color = const Color(0xFF212121).withOpacity(0.9);
+        emoji = '⚙️';
         break;
       case HazardType.toxic:
-        color = const Color(0xFF9CCC65).withOpacity(0.8);
+        color = const Color(0xFF9CCC65).withOpacity(0.85);
+        emoji = '☢️';
         break;
     }
 
     add(CircleComponent(
-      radius: 18,
+      radius: 20,
       paint: Paint()..color = color,
       anchor: Anchor.center,
       position: size / 2,
     ));
 
-    // Warning mark
+    // Warning border
+    add(CircleComponent(
+      radius: 21,
+      paint: Paint()
+        ..color = Colors.redAccent
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+      anchor: Anchor.center,
+      position: size / 2,
+    ));
+
     add(TextComponent(
-      text: '!',
+      text: emoji,
       anchor: Anchor.center,
       position: size / 2,
       textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontSize: 20),
       ),
     ));
 
@@ -63,8 +74,7 @@ class Hazard extends PositionComponent with HasGameRef<EcoWarriorGame>, Collisio
   @override
   void update(double dt) {
     position += direction * speed * dt;
-    // Remove when off screen
-    if (position.x < -50 || position.x > gameRef.size.x + 50) {
+    if (position.x < -60 || position.x > gameRef.size.x + 60) {
       removeFromParent();
     }
   }
