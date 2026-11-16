@@ -291,8 +291,8 @@ class _RoundButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color,
-          boxShadow: const [
-            BoxShadow(color: Colors.black35, blurRadius: 10, offset: Offset(0, 4)),
+          boxShadow:   [
+            BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4)),
           ],
           border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
         ),

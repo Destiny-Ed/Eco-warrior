@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:async' as timer;
 import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -31,8 +32,8 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
   Vector2 joystickDirection = Vector2.zero();
   final Random _random = Random();
 
-  Timer? _spawnTimer;
-  Timer? _hazardTimer;
+  timer.Timer? _spawnTimer;
+  timer.Timer? _hazardTimer;
 
   // Bins for recycling
   final List<Bin> bins = [];
@@ -114,12 +115,12 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
     add(instructionText);
 
     // Spawn timers
-    _spawnTimer = Timer.periodic(level.spawnInterval, (_) {
+    _spawnTimer = timer.Timer.periodic(level.spawnInterval, (_) {
       if (!isPaused && !isComplete) _spawnTrash();
     });
 
     if (level.hasHazards) {
-      _hazardTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _hazardTimer = timer.Timer.periodic(const Duration(seconds: 5), (_) {
         if (!isPaused && !isComplete) _spawnHazard();
       });
     }

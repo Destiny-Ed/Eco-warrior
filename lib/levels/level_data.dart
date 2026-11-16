@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Dynamic Level System
 /// To add a new level simply append a new LevelConfig to [allLevels].
 
