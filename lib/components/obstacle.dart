@@ -1,6 +1,7 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../game/eco_warrior_game.dart';
 import 'player.dart';
 
@@ -8,21 +9,20 @@ class Obstacle extends PositionComponent with HasGameRef<EcoWarriorGame>, Collis
   Obstacle({required Vector2 position})
       : super(
           position: position,
-          size: Vector2(38, 38),
+          size: Vector2(40, 40),
           anchor: Anchor.center,
         );
 
   @override
   Future<void> onLoad() async {
-    // Cone / barrier look
     add(CircleComponent(
-      radius: 16,
+      radius: 17,
       paint: Paint()..color = const Color(0xFFFF7043),
       anchor: Anchor.center,
       position: size / 2,
     ));
     add(CircleComponent(
-      radius: 17,
+      radius: 18,
       paint: Paint()
         ..color = Colors.white
         ..style = PaintingStyle.stroke
@@ -44,8 +44,12 @@ class Obstacle extends PositionComponent with HasGameRef<EcoWarriorGame>, Collis
   void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(intersectionPoints, other);
     if (other is Player) {
+      HapticFeedback.mediumImpact();
       gameRef.hitObstacle();
-      // Small knockback feel by removing briefly or just feedback
+
+      // Push player away so they cannot pass through
+      final direction = (other.position - position).normalized();
+      other.position += direction * 28;
     }
   }
 }

@@ -1,12 +1,10 @@
-import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../levels/level_data.dart';
 
-/// Decorative background elements that make each level feel like a real place.
+/// Clean, structured decorative environments per level theme.
 class EnvironmentLayer extends PositionComponent {
   final LevelTheme theme;
-  final Random _random = Random();
 
   EnvironmentLayer({required this.theme, required Vector2 size})
       : super(size: size, priority: -10);
@@ -33,138 +31,169 @@ class EnvironmentLayer extends PositionComponent {
   }
 
   void _buildNeighborhood() {
-    // Sky gradient feel already from backgroundColor
-    // Road / path
+    // Clean horizontal path
     add(RectangleComponent(
-      size: Vector2(size.x, 40),
-      position: Vector2(0, size.y * 0.55),
-      paint: Paint()..color = const Color(0xFFBCAAA4).withOpacity(0.6),
+      size: Vector2(size.x, 48),
+      position: Vector2(0, size.y * 0.58),
+      paint: Paint()..color = const Color(0xFFD7CCC8),
+    ));
+    // Path edge lines
+    add(RectangleComponent(
+      size: Vector2(size.x, 3),
+      position: Vector2(0, size.y * 0.58),
+      paint: Paint()..color = const Color(0xFFA1887F),
     ));
 
-    // Simple houses in the background
+    // Structured row of houses
+    final houseWidth = 58.0;
+    final startX = 24.0;
+    final gap = (size.x - 48 - houseWidth * 4) / 3;
     for (int i = 0; i < 4; i++) {
-      final x = 30.0 + i * (size.x / 4);
-      add(_House(position: Vector2(x, size.y * 0.28 + _random.nextDouble() * 20)));
+      final x = startX + i * (houseWidth + gap);
+      add(_House(position: Vector2(x, size.y * 0.30)));
     }
 
-    // A few static trees
-    for (int i = 0; i < 5; i++) {
+    // Neat background trees
+    for (int i = 0; i < 4; i++) {
       add(_DecorTree(
-        position: Vector2(
-          20 + _random.nextDouble() * (size.x - 40),
-          size.y * 0.35 + _random.nextDouble() * 40,
-        ),
+        position: Vector2(40 + i * (size.x / 4), size.y * 0.42),
       ));
     }
 
-    // Moving people (simple)
-    add(_MovingNpc(emoji: '🚶', startX: 20, y: size.y * 0.58, speed: 25));
-    add(_MovingNpc(emoji: '👫', startX: size.x - 40, y: size.y * 0.60, speed: -20));
+    // People walking on the path
+    add(_MovingNpc(emoji: '🚶', y: size.y * 0.60, speed: 22, fromLeft: true));
+    add(_MovingNpc(emoji: '👫', y: size.y * 0.62, speed: 18, fromLeft: false));
   }
 
   void _buildCity() {
-    // Road
+    // Street
     add(RectangleComponent(
-      size: Vector2(size.x, 55),
-      position: Vector2(0, size.y * 0.52),
+      size: Vector2(size.x, 60),
+      position: Vector2(0, size.y * 0.55),
       paint: Paint()..color = const Color(0xFF546E7A),
     ));
-    // Road lines
-    for (int i = 0; i < 8; i++) {
+    // Center line
+    for (int i = 0; i < 10; i++) {
       add(RectangleComponent(
-        size: Vector2(30, 4),
-        position: Vector2(i * 60.0, size.y * 0.52 + 25),
-        paint: Paint()..color = Colors.white.withOpacity(0.7),
+        size: Vector2(28, 4),
+        position: Vector2(i * 55.0 + 10, size.y * 0.55 + 28),
+        paint: Paint()..color = Colors.white.withOpacity(0.85),
       ));
     }
 
-    // Tall buildings
+    // Clean row of buildings
+    final heights = [95.0, 120.0, 85.0, 110.0, 100.0];
     for (int i = 0; i < 5; i++) {
-      final h = 80.0 + _random.nextDouble() * 60;
+      final h = heights[i];
       add(RectangleComponent(
-        size: Vector2(45, h),
-        position: Vector2(20 + i * 70.0, size.y * 0.52 - h),
-        paint: Paint()..color = Color.lerp(const Color(0xFF37474F), const Color(0xFF78909C), _random.nextDouble())!,
+        size: Vector2(48, h),
+        position: Vector2(18 + i * 72.0, size.y * 0.55 - h),
+        paint: Paint()..color = i.isEven ? const Color(0xFF37474F) : const Color(0xFF455A64),
       ));
+      // Windows
+      for (int w = 0; w < 3; w++) {
+        add(RectangleComponent(
+          size: Vector2(8, 10),
+          position: Vector2(28 + i * 72.0, size.y * 0.55 - h + 20 + w * 22),
+          paint: Paint()..color = const Color(0xFFFFF59D).withOpacity(0.7),
+        ));
+      }
     }
 
-    add(_MovingNpc(emoji: '🚗', startX: -30, y: size.y * 0.55, speed: 40));
-    add(_MovingNpc(emoji: '🚶‍♂️', startX: size.x + 20, y: size.y * 0.58, speed: -30));
+    add(_MovingNpc(emoji: '🚗', y: size.y * 0.58, speed: 38, fromLeft: true));
+    add(_MovingNpc(emoji: '🚶‍♂️', y: size.y * 0.61, speed: 20, fromLeft: false));
   }
 
   void _buildBeach() {
-    // Sand
-    add(RectangleComponent(
-      size: Vector2(size.x, size.y * 0.35),
-      position: Vector2(0, size.y * 0.55),
-      paint: Paint()..color = const Color(0xFFFFE082).withOpacity(0.7),
-    ));
     // Water
     add(RectangleComponent(
-      size: Vector2(size.x, size.y * 0.2),
-      position: Vector2(0, size.y * 0.35),
-      paint: Paint()..color = const Color(0xFF4FC3F7).withOpacity(0.5),
+      size: Vector2(size.x, size.y * 0.22),
+      position: Vector2(0, size.y * 0.32),
+      paint: Paint()..color = const Color(0xFF29B6F6).withOpacity(0.55),
+    ));
+    // Sand
+    add(RectangleComponent(
+      size: Vector2(size.x, size.y * 0.38),
+      position: Vector2(0, size.y * 0.52),
+      paint: Paint()..color = const Color(0xFFFFE082).withOpacity(0.75),
     ));
 
-    // Simple palm-like trees
+    // Evenly spaced palms
     for (int i = 0; i < 3; i++) {
       add(_DecorTree(
-        position: Vector2(40 + i * 120.0, size.y * 0.48),
+        position: Vector2(50 + i * 130.0, size.y * 0.50),
         isPalm: true,
       ));
     }
 
-    add(_MovingNpc(emoji: '🐋', startX: 10, y: size.y * 0.42, speed: 18));
-    add(_MovingNpc(emoji: '🦈', startX: size.x - 30, y: size.y * 0.40, speed: -15));
+    add(_MovingNpc(emoji: '🐋', y: size.y * 0.40, speed: 16, fromLeft: true));
+    add(_MovingNpc(emoji: '🦈', y: size.y * 0.38, speed: 14, fromLeft: false));
   }
 
   void _buildForest() {
-    for (int i = 0; i < 8; i++) {
-      add(_DecorTree(
-        position: Vector2(
-          15 + _random.nextDouble() * (size.x - 30),
-          size.y * 0.25 + _random.nextDouble() * 80,
-        ),
-      ));
+    // Structured tree rows
+    for (int row = 0; row < 3; row++) {
+      for (int col = 0; col < 5; col++) {
+        add(_DecorTree(
+          position: Vector2(
+            30 + col * (size.x / 5),
+            size.y * 0.28 + row * 45,
+          ),
+        ));
+      }
     }
-    add(_MovingNpc(emoji: '🐺', startX: 20, y: size.y * 0.55, speed: 22));
-    add(_MovingNpc(emoji: '🦌', startX: size.x - 40, y: size.y * 0.58, speed: -18));
+    add(_MovingNpc(emoji: '🐺', y: size.y * 0.58, speed: 20, fromLeft: true));
+    add(_MovingNpc(emoji: '🦌', y: size.y * 0.60, speed: 17, fromLeft: false));
   }
 
   void _buildFinal() {
-    // Mix of city + pollution feel
+    final heights = [80.0, 105.0, 90.0, 115.0];
     for (int i = 0; i < 4; i++) {
-      final h = 70.0 + _random.nextDouble() * 50;
+      final h = heights[i];
       add(RectangleComponent(
-        size: Vector2(40, h),
-        position: Vector2(25 + i * 85.0, size.y * 0.5 - h),
-        paint: Paint()..color = const Color(0xFF455A64),
+        size: Vector2(52, h),
+        position: Vector2(30 + i * 90.0, size.y * 0.52 - h),
+        paint: Paint()..color = const Color(0xFF37474F),
       ));
     }
     add(RectangleComponent(
-      size: Vector2(size.x, 30),
-      position: Vector2(0, size.y * 0.52),
-      paint: Paint()..color = const Color(0xFF546E7A).withOpacity(0.8),
+      size: Vector2(size.x, 36),
+      position: Vector2(0, size.y * 0.54),
+      paint: Paint()..color = const Color(0xFF546E7A),
     ));
-    add(_MovingNpc(emoji: '🚗', startX: -20, y: size.y * 0.54, speed: 35));
+    add(_MovingNpc(emoji: '🚗', y: size.y * 0.56, speed: 32, fromLeft: true));
   }
 }
 
 class _House extends PositionComponent {
-  _House({required Vector2 position}) : super(position: position, size: Vector2(55, 50));
+  _House({required Vector2 position})
+      : super(position: position, size: Vector2(58, 52));
 
   @override
   Future<void> onLoad() async {
+    // Body
     add(RectangleComponent(
-      size: Vector2(50, 35),
-      position: Vector2(2.5, 15),
-      paint: Paint()..color = const Color(0xFFFFCC80),
+      size: Vector2(52, 34),
+      position: Vector2(3, 16),
+      paint: Paint()..color = const Color(0xFFFFE0B2),
     ));
     // Roof
     add(RectangleComponent(
-      size: Vector2(58, 18),
-      position: Vector2(-1.5, 0),
+      size: Vector2(58, 16),
+      position: Vector2(0, 2),
       paint: Paint()..color = const Color(0xFFE57373),
+    ));
+    // Door
+    add(RectangleComponent(
+      size: Vector2(12, 16),
+      position: Vector2(23, 34),
+      paint: Paint()..color = const Color(0xFF6D4C41),
+    ));
+    // Window
+    add(RectangleComponent(
+      size: Vector2(10, 10),
+      position: Vector2(10, 24),
+      paint: Paint()..color = const Color(0xFF81D4FA),
     ));
   }
 }
@@ -172,19 +201,19 @@ class _House extends PositionComponent {
 class _DecorTree extends PositionComponent {
   final bool isPalm;
   _DecorTree({required Vector2 position, this.isPalm = false})
-      : super(position: position, size: Vector2(36, 50), anchor: Anchor.bottomCenter);
+      : super(position: position, size: Vector2(34, 48), anchor: Anchor.bottomCenter);
 
   @override
   Future<void> onLoad() async {
     add(RectangleComponent(
-      size: Vector2(8, 20),
-      position: Vector2(14, 30),
-      paint: Paint()..color = const Color(0xFF6D4C41),
+      size: Vector2(7, 18),
+      position: Vector2(13.5, 30),
+      paint: Paint()..color = const Color(0xFF5D4037),
     ));
     add(CircleComponent(
-      radius: isPalm ? 12 : 16,
-      position: Vector2(18, 18),
-      paint: Paint()..color = isPalm ? const Color(0xFF66BB6A) : const Color(0xFF43A047),
+      radius: isPalm ? 11 : 14,
+      position: Vector2(17, 16),
+      paint: Paint()..color = isPalm ? const Color(0xFF66BB6A) : const Color(0xFF2E7D32),
     ));
   }
 }
@@ -192,15 +221,19 @@ class _DecorTree extends PositionComponent {
 class _MovingNpc extends PositionComponent {
   final String emoji;
   final double speed;
-  final double startX;
   final double y;
+  final bool fromLeft;
 
   _MovingNpc({
     required this.emoji,
-    required this.startX,
     required this.y,
     required this.speed,
-  }) : super(position: Vector2(startX, y), size: Vector2(30, 30), priority: -5);
+    required this.fromLeft,
+  }) : super(
+          position: Vector2(fromLeft ? -40 : 420, y),
+          size: Vector2(32, 32),
+          priority: -5,
+        );
 
   @override
   Future<void> onLoad() async {
@@ -208,14 +241,14 @@ class _MovingNpc extends PositionComponent {
       text: emoji,
       anchor: Anchor.center,
       position: size / 2,
-      textRenderer: TextPaint(style: const TextStyle(fontSize: 22)),
+      textRenderer: TextPaint(style: const TextStyle(fontSize: 24)),
     ));
   }
 
   @override
   void update(double dt) {
-    position.x += speed * dt;
-    if (speed > 0 && position.x > 400) position.x = -30;
-    if (speed < 0 && position.x < -40) position.x = 420;
+    position.x += (fromLeft ? speed : -speed) * dt;
+    if (fromLeft && position.x > 450) position.x = -40;
+    if (!fromLeft && position.x < -50) position.x = 450;
   }
 }
