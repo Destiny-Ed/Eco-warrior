@@ -1,6 +1,7 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flame/components.dart'; // for Vector2
 import '../game/eco_warrior_game.dart';
 import '../levels/level_data.dart';
 import 'pause_menu_screen.dart';

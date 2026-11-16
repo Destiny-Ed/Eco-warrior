@@ -3,6 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../game/eco_warrior_game.dart';
 import '../levels/level_data.dart';
+import 'player.dart';
 
 class Hazard extends PositionComponent with HasGameRef<EcoWarriorGame>, CollisionCallbacks {
   final HazardType type;

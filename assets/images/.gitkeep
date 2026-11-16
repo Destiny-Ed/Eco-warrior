@@ -1,0 +1,2 @@
+# Placeholder so the assets folder exists.
+# Drop your cute sprites here (player.png, trash_*.png, etc.) and update the components to load them with Sprite.load().
