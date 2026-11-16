@@ -16,7 +16,7 @@ import '../components/obstacle.dart';
 
 class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   final LevelConfig level;
-  final double topSafePadding; // from MediaQuery to avoid status bar
+  final double topSafePadding;
   final VoidCallback onPause;
   final VoidCallback onLevelComplete;
   final VoidCallback onGameOver;
@@ -31,6 +31,7 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
   int treesPlanted = 0;
   int health = 3;
   int score = 0;
+  int totalTrashSpawned = 0;
   bool isPaused = false;
   bool isComplete = false;
 
@@ -43,6 +44,9 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
 
   int remainingSeconds = 0;
   final List<Bin> bins = [];
+
+  // Hard cap: never spawn more trash than needed for the goal + small buffer
+  int get maxTrashAllowed => level.trashTarget + 3;
 
   EcoWarriorGame({
     required this.level,
@@ -60,113 +64,106 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
   Future<void> onLoad() async {
     remainingSeconds = level.timeLimitSeconds;
 
-    // Environment decorations (houses, roads, people, animals...)
     add(EnvironmentLayer(theme: level.theme, size: size));
 
-    // Soft overlay so game elements stay readable
+    // Light overlay for readability
     add(RectangleComponent(
       size: size,
-      paint: Paint()..color = level.backgroundColor.withOpacity(0.25),
+      paint: Paint()..color = level.backgroundColor.withOpacity(0.18),
       priority: -5,
     ));
 
-    // Player
     player = Player(position: Vector2(size.x / 2, size.y * 0.62));
     add(player);
 
-    // Recycling bins
+    // Bins at very bottom
     final binTypes = TrashType.values;
     final spacing = size.x / 5;
     for (int i = 0; i < binTypes.length; i++) {
       final bin = Bin(
-        position: Vector2(spacing * (i + 1), size.y - 70),
+        position: Vector2(spacing * (i + 1), size.y - 58),
         acceptsType: binTypes[i],
       );
       bins.add(bin);
       add(bin);
     }
 
-    // A few static obstacles that cost points
     _spawnObstacles();
 
-    // Initial trash (limited)
-    for (int i = 0; i < level.initialTrash; i++) {
+    // Initial trash – limited to what is needed
+    final initial = level.initialTrash.clamp(0, maxTrashAllowed);
+    for (int i = 0; i < initial; i++) {
       _spawnTrash();
     }
 
-    // ===== HUD (pushed below status bar) =====
-    final hudTop = topSafePadding + 8;
+    // ===== Clean HUD layout =====
+    final hudTop = topSafePadding + 10;
 
+    // Left: progress
     hudText = TextComponent(
       text: _hudString(),
-      position: Vector2(12, hudTop),
+      position: Vector2(14, hudTop),
       priority: 100,
       textRenderer: TextPaint(
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
-          fontSize: 17,
-          fontWeight: FontWeight.bold,
-          shadows: [
-            Shadow(color: Colors.black.withOpacity(0.75), blurRadius: 4, offset: const Offset(1, 1)),
-          ],
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          shadows: [Shadow(color: Colors.black54, blurRadius: 3, offset: Offset(1, 1))],
         ),
       ),
     );
     add(hudText);
 
-    // Timer
+    // Right: timer (with space so pause button doesn't cover it)
     timerText = TextComponent(
       text: _timerString(),
-      position: Vector2(size.x - 12, hudTop),
+      position: Vector2(size.x - 56, hudTop),
       anchor: Anchor.topRight,
       priority: 100,
       textRenderer: TextPaint(
-        style: TextStyle(
-          color: Colors.yellowAccent,
-          fontSize: 18,
-          fontWeight: FontWeight.w900,
-          shadows: [
-            Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 4),
-          ],
+        style: const TextStyle(
+          color: Color(0xFFFFF176),
+          fontSize: 17,
+          fontWeight: FontWeight.w800,
+          shadows: [Shadow(color: Colors.black54, blurRadius: 3)],
         ),
       ),
     );
     add(timerText);
 
-    // Instructions
+    // Center instruction
     instructionText = TextComponent(
-      text: 'Move with joystick • Tap HAND to pick trash',
-      position: Vector2(size.x / 2, hudTop + 32),
+      text: 'Move • Pick trash • Deliver to matching bin',
+      position: Vector2(size.x / 2, hudTop + 28),
       anchor: Anchor.topCenter,
       priority: 100,
       textRenderer: TextPaint(
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          shadows: [Shadow(color: Colors.black.withOpacity(0.85), blurRadius: 4)],
+          shadows: [Shadow(color: Colors.black54, blurRadius: 3)],
         ),
       ),
     );
     add(instructionText);
 
-    // Smarter spawning: only when trash is low
+    // Smarter spawning – only if under cap and current count is low
     _spawnTimer = timer.Timer.periodic(level.spawnInterval, (_) {
-      if (!isPaused && !isComplete) {
-        final currentTrash = children.whereType<Trash>().length;
-        if (currentTrash < 7) {
-          _spawnTrash();
-        }
+      if (isPaused || isComplete) return;
+      final current = children.whereType<Trash>().length;
+      if (current < 5 && totalTrashSpawned < maxTrashAllowed) {
+        _spawnTrash();
       }
     });
 
     if (level.hasHazards) {
-      _hazardTimer = timer.Timer.periodic(const Duration(seconds: 6), (_) {
+      _hazardTimer = timer.Timer.periodic(const Duration(seconds: 7), (_) {
         if (!isPaused && !isComplete) _spawnHazard();
       });
     }
 
-    // Countdown timer
     if (level.timeLimitSeconds > 0) {
       _countdownTimer = timer.Timer.periodic(const Duration(seconds: 1), (_) {
         if (isPaused || isComplete) return;
@@ -181,46 +178,48 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
   }
 
   String _hudString() {
-    final treePart = level.treesToPlant > 0 ? '  🌳 $treesPlanted/${level.treesToPlant}' : '';
-    return '🗑️ $trashCollected/${level.trashTarget}$treePart  ❤️ $health  🏆 $score';
+    final treePart = level.treesToPlant > 0 ? '  🌳$treesPlanted/${level.treesToPlant}' : '';
+    return '🗑️$trashCollected/${level.trashTarget}$treePart  ❤$health  $score';
   }
 
   String _timerString() {
     if (level.timeLimitSeconds <= 0) return '';
     final m = remainingSeconds ~/ 60;
     final s = remainingSeconds % 60;
-    return '⏱ ${m.toString().padLeft(1, '0')}:${s.toString().padLeft(2, '0')}';
+    return '$m:${s.toString().padLeft(2, '0')}';
   }
 
   void _updateInstruction() {
     if (player.isCarrying) {
       final t = player.carriedTrash!;
-      instructionText.text = 'Take ${t.label} to the matching ${t.label} bin!';
+      instructionText.text = 'Deliver ${t.label} to the ${t.label} bin';
       instructionText.textRenderer = TextPaint(
         style: TextStyle(
           color: t.color,
           fontSize: 14,
-          fontWeight: FontWeight.bold,
-          shadows: [Shadow(color: Colors.black.withOpacity(0.85), blurRadius: 4)],
+          fontWeight: FontWeight.w700,
+          shadows: const [Shadow(color: Colors.black54, blurRadius: 3)],
         ),
       );
     } else {
-      instructionText.text = 'Move with joystick • Tap HAND to pick trash near you';
+      instructionText.text = 'Move • Pick trash • Deliver to matching bin';
       instructionText.textRenderer = TextPaint(
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          shadows: [Shadow(color: Colors.black.withOpacity(0.85), blurRadius: 4)],
+          shadows: [Shadow(color: Colors.black54, blurRadius: 3)],
         ),
       );
     }
   }
 
   void _spawnTrash() {
+    if (totalTrashSpawned >= maxTrashAllowed) return;
+    totalTrashSpawned++;
     final pos = Vector2(
-      40 + _random.nextDouble() * (size.x - 80),
-      100 + _random.nextDouble() * (size.y - 300),
+      50 + _random.nextDouble() * (size.x - 100),
+      110 + _random.nextDouble() * (size.y - 320),
     );
     add(Trash(position: pos));
   }
@@ -230,7 +229,7 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
     final fromLeft = _random.nextBool();
     final pos = Vector2(
       fromLeft ? -30 : size.x + 30,
-      120 + _random.nextDouble() * (size.y - 300),
+      130 + _random.nextDouble() * (size.y - 320),
     );
     add(Hazard(
       position: pos,
@@ -241,12 +240,13 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
   }
 
   void _spawnObstacles() {
-    // A few static obstacles that reduce score when hit
-    for (int i = 0; i < 3; i++) {
-      final pos = Vector2(
-        60 + _random.nextDouble() * (size.x - 120),
-        140 + _random.nextDouble() * (size.y - 340),
-      );
+    // 2–3 well-spaced obstacles
+    final positions = [
+      Vector2(size.x * 0.25, size.y * 0.38),
+      Vector2(size.x * 0.75, size.y * 0.42),
+      Vector2(size.x * 0.50, size.y * 0.33),
+    ];
+    for (final pos in positions.take(level.id >= 3 ? 3 : 2)) {
       add(Obstacle(position: pos));
     }
   }
@@ -258,7 +258,7 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
     }
 
     Trash? nearest;
-    double nearestDist = 70;
+    double nearestDist = 68;
 
     for (final trash in children.whereType<Trash>()) {
       final dist = player.position.distanceTo(trash.position);
@@ -282,7 +282,7 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
 
     final carried = player.carriedTrash!;
     Bin? nearestBin;
-    double nearestDist = 90;
+    double nearestDist = 85;
 
     for (final bin in bins) {
       final dist = player.position.distanceTo(bin.position);
@@ -303,7 +303,7 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
         _checkWin();
       } else {
         HapticFeedback.vibrate();
-        instructionText.text = 'Wrong bin! Find the ${carried.label} bin';
+        instructionText.text = 'Wrong bin! Find the ${carried.label} one';
       }
     }
   }
@@ -312,26 +312,25 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
     if (treesPlanted >= level.treesToPlant) return;
     treesPlanted++;
     score += 20;
-    final pos = Vector2(
-      40 + _random.nextDouble() * (size.x - 80),
-      size.y - 160 - _random.nextDouble() * 30,
-    );
-    add(TreeComponent(position: pos));
+
+    // Plant exactly where the warrior is standing
+    final plantPos = player.position + Vector2(0, 18);
+    add(TreeComponent(position: plantPos));
+
     HapticFeedback.lightImpact();
     hudText.text = _hudString();
     _checkWin();
   }
 
   void hitObstacle() {
-    score = (score - 8).clamp(0, 9999);
-    HapticFeedback.vibrate();
+    score = (score - 8).clamp(0, 99999);
     hudText.text = _hudString();
   }
 
   void takeDamage() {
     health--;
-    score = (score - 10).clamp(0, 9999);
-    HapticFeedback.vibrate();
+    score = (score - 12).clamp(0, 99999);
+    HapticFeedback.heavyImpact();
     hudText.text = _hudString();
     if (health <= 0) {
       isComplete = true;
@@ -342,7 +341,7 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
   void _checkWin() {
     if (trashCollected >= level.trashTarget && treesPlanted >= level.treesToPlant) {
       isComplete = true;
-      score += remainingSeconds * 2; // time bonus
+      score += remainingSeconds * 2;
       HapticFeedback.heavyImpact();
       onLevelComplete();
     }
@@ -353,6 +352,7 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
     treesPlanted = 0;
     health = 3;
     score = 0;
+    totalTrashSpawned = 0;
     remainingSeconds = level.timeLimitSeconds;
     isPaused = false;
     isComplete = false;
@@ -365,9 +365,11 @@ class EcoWarriorGame extends FlameGame with HasCollisionDetection, TapCallbacks 
     children.whereType<Obstacle>().forEach((c) => c.removeFromParent());
 
     _spawnObstacles();
-    for (int i = 0; i < level.initialTrash; i++) {
+    final initial = level.initialTrash.clamp(0, maxTrashAllowed);
+    for (int i = 0; i < initial; i++) {
       _spawnTrash();
     }
+
     player.position = Vector2(size.x / 2, size.y * 0.62);
     hudText.text = _hudString();
     timerText.text = _timerString();

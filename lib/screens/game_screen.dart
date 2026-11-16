@@ -20,7 +20,7 @@ class _GameScreenState extends State<GameScreen> {
   late EcoWarriorGame game;
   Offset? _joystickOrigin;
   Offset? _knobPosition;
-  static const double joystickRadius = 58;
+  static const double joystickRadius = 56;
   bool _showTutorial = false;
   bool _tutorialChecked = false;
 
@@ -59,9 +59,7 @@ class _GameScreenState extends State<GameScreen> {
   Future<void> _finishTutorial() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('tutorial_seen', true);
-    setState(() {
-      _showTutorial = false;
-    });
+    setState(() => _showTutorial = false);
     _initGame();
   }
 
@@ -78,14 +76,14 @@ class _GameScreenState extends State<GameScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('🎉 Mission Complete!', textAlign: TextAlign.center),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Mission Complete', textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('You restored ${widget.level.name}!'),
             const SizedBox(height: 8),
-            Text('Score: ${game.score}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('Score: ${game.score}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             Text(
               widget.level.tip,
@@ -108,21 +106,16 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  void _onGameOver() {
-    _showFailDialog('You took too much damage. Try again, Eco-Warrior!');
-  }
-
-  void _onTimeUp() {
-    _showFailDialog('Time\'s up! The pollution won this round. Try again!');
-  }
+  void _onGameOver() => _showFailDialog('You ran out of hearts. Try again!');
+  void _onTimeUp() => _showFailDialog('Time ran out. Try again!');
 
   void _showFailDialog(String message) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('😢 Mission Failed', textAlign: TextAlign.center),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Mission Failed', textAlign: TextAlign.center),
         content: Text(message, textAlign: TextAlign.center),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
@@ -153,10 +146,7 @@ class _GameScreenState extends State<GameScreen> {
         ? Offset.fromDirection(delta.direction, joystickRadius)
         : delta;
 
-    setState(() {
-      _knobPosition = _joystickOrigin! + clamped;
-    });
-
+    setState(() => _knobPosition = _joystickOrigin! + clamped);
     game.joystickDirection = Vector2(clamped.dx / joystickRadius, clamped.dy / joystickRadius);
   }
 
@@ -171,9 +161,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_tutorialChecked) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_showTutorial) {
@@ -185,13 +173,14 @@ class _GameScreenState extends State<GameScreen> {
         children: [
           GameWidget(game: game),
 
-          // Pause
+          // Pause button – top right, clear of timer
           Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            right: 12,
+            top: MediaQuery.of(context).padding.top + 6,
+            right: 10,
             child: _RoundButton(
               icon: Icons.pause_rounded,
-              color: Colors.orangeAccent,
+              color: const Color(0xFFFFA726),
+              size: 42,
               onTap: () {
                 game.isPaused = true;
                 Navigator.push(
@@ -207,10 +196,10 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
 
-          // Joystick
+          // Joystick – raised so it does not overlap the bins
           Positioned(
-            left: 20,
-            bottom: 28,
+            left: 18,
+            bottom: 130,
             child: GestureDetector(
               onPanStart: (d) {
                 setState(() {
@@ -231,31 +220,31 @@ class _GameScreenState extends State<GameScreen> {
                       height: joystickRadius * 2,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.22),
-                        border: Border.all(color: Colors.white60, width: 2.5),
+                        color: Colors.black.withOpacity(0.18),
+                        border: Border.all(color: Colors.white54, width: 2),
                       ),
                     ),
                     if (_knobPosition != null && _joystickOrigin != null)
                       Positioned(
-                        left: (_knobPosition!.dx - 24).clamp(0, joystickRadius * 2 - 48),
-                        top: (_knobPosition!.dy - 24).clamp(0, joystickRadius * 2 - 48),
+                        left: (_knobPosition!.dx - 22).clamp(0, joystickRadius * 2 - 44),
+                        top: (_knobPosition!.dy - 22).clamp(0, joystickRadius * 2 - 44),
                         child: Container(
-                          width: 48,
-                          height: 48,
+                          width: 44,
+                          height: 44,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
-                            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8)],
+                            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
                           ),
                         ),
                       )
                     else
                       Container(
-                        width: 48,
-                        height: 48,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.75),
+                          color: Colors.white.withOpacity(0.85),
                         ),
                       ),
                   ],
@@ -264,52 +253,51 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
 
-          // HAND button
+          // Action buttons – right side, clean
           Positioned(
-            right: 18,
-            bottom: 140,
+            right: 16,
+            bottom: 150,
             child: Column(
               children: [
                 _RoundButton(
                   icon: Icons.back_hand_rounded,
                   color: const Color(0xFFFFA726),
-                  size: 68,
+                  size: 62,
                   onTap: () => game.tryPickTrash(),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 const Text(
-                  'PICK / DROP',
+                  'PICK',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    shadows: [Shadow(color: Colors.black54, blurRadius: 3)],
+                    fontWeight: FontWeight.w700,
+                    shadows: [Shadow(color: Colors.black45, blurRadius: 2)],
                   ),
                 ),
               ],
             ),
           ),
 
-          // Plant button
           Positioned(
-            right: 18,
-            bottom: 55,
+            right: 16,
+            bottom: 70,
             child: Column(
               children: [
                 _RoundButton(
                   icon: Icons.park_rounded,
-                  color: const Color(0xFF66BB6A),
-                  size: 60,
+                  color: const Color(0xFF43A047),
+                  size: 56,
                   onTap: () => game.plantTree(),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 const Text(
                   'PLANT',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    shadows: [Shadow(color: Colors.black54, blurRadius: 3)],
+                    fontWeight: FontWeight.w700,
+                    shadows: [Shadow(color: Colors.black45, blurRadius: 2)],
                   ),
                 ),
               ],
@@ -331,25 +319,24 @@ class _RoundButton extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.onTap,
-    this.size = 54,
+    this.size = 52,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-          boxShadow:   [
-            BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4)),
-          ],
-          border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+    return Material(
+      color: color,
+      shape: const CircleBorder(),
+      elevation: 4,
+      shadowColor: Colors.black38,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Icon(icon, color: Colors.white, size: size * 0.48),
         ),
-        child: Icon(icon, color: Colors.white, size: size * 0.48),
       ),
     );
   }
